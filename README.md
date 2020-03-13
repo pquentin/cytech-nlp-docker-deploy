@@ -204,3 +204,13 @@ wrk -t 2 -c 10 http://127.0.0.1:8000/v1/predict -s post.lua
 ```
 
 Combien de requêtes par seconde obtenez-vous ?
+
+## Notes
+
+Ceci est un TP bonus, il ne peut que donner des points, pas en
+enlever.
+
+Si vous souhaitez obtenir les points bonus, merci de vous enregistrer
+en train de faire `docker-compose up` et appelez curl ou wrk comme
+ci-dessus. Vous pouvez utiliser https://asciinema.org/ ou m'envoyer
+une vidéo par mail.
