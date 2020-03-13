@@ -128,6 +128,40 @@ Lancez l'application comme indiqué plus haut, puis testez une requête
 curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest hit movie of 1971"}
 ```
 
+## Préparatifs pour Docker
+
+Il y a deux changements à apporter pour que votre code fonctionne dans
+Docker. En effet, la communication avec FastAPI ne se fera plus par
+localhost, mais avec le nom de l'image TensorFLow Serving, qui vous
+sera passée dans la variable d'environnement `TF_HOST`.
+
+Il faut donc modifier votre code pour lire `TF_HOST`, en utilisant
+`localhost` si la variable n'est pas définie :
+
+```
+TF_HOST: str = os.environ.get("TF_HOST", "localhost")
+```
+
+Et ensuite, au moment de la requête, définissez l'URL comme suit, en
+utilisant par exemple une f-string Python :
+
+```
+f"http://{TF_HOST}:8501/v1/models/imdb_reviews_model:predict"
+```
+
+Le deuxième changement consiste à trouver tokenizer.json au bon
+endroit. Pour ce faire, vous pouvez changer votre fonction
+`startup_event` comme suit:
+
+```
+appdir = os.path.abspath(os.path.dirname(__file__))
+tokenizer_path = os.path.join(appdir, "../models/imdb_reviews_model/tokenizer.json")
+```
+
+Vous pouvez alors ouvrir le fichier `tokenizer_path`, et lire les
+données pour les fournir à
+`tf.keras.preprocessing.text.tokenizer_from_json`.
+
 ## FastAPI dans Docker
 
 Fantastique ! Nous sommes prêts pour passer à Docker. Construisons
