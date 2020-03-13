@@ -98,7 +98,7 @@ padding.
    `tf.keras.preprocessing.text.tokenizer_from_json` (qui prend une
    chaîne de caractères, c'est à vous d'ouvrir le fichier et d'appeler
    `read()`)
- * Écrire une fonction preprocess() qui étant donné un texte comme
+ * Écrire une fonction `preprocess()` qui étant donné un texte comme
    "This was the biggest hit movie of 1971", renvoie une liste Python
    d'entiers à envoyer à TensorFlow.
 
@@ -118,9 +118,9 @@ entraîné, ce n'est pas grave parce que ce n'est pas l'objet de ce TP.)
 Nous voulons maintenant que FastAPI communique avec TensorFlow
 Serving.
 
-Ajoutez cette fonction qui va s'exécuter au démarrage de votre
-application FastAPI pour instancier le tokenizer Keras d'après le code
-écrit plus haut :
+Ajoutez à `app/main.py` cette fonction dans qui va s'exécuter au
+démarrage de votre application FastAPI pour instancier le tokenizer
+Keras d'après le code écrit plus haut :
 
 ```python3
 @app.on_event("startup")
@@ -128,10 +128,10 @@ def startup_event():
     app.state.tokenizer = ...
 ```
 
-Ensuite, implémenter un endpoint `predict` (comme nous l'avons fait
-pour root plus haut) qui accepte un texte, le transforme avec la
-fonction preprocess(), appelle TensorFlow, puis renvoie True si la
-prédiction est supérieure à 0.5, False sinon.
+Ensuite, à la manière de `root` plus haut, implémenter un endpoint
+`predict` qui accepte un texte, le transforme avec la fonction
+`preprocess()`, appelle TensorFlow, puis renvoie `True` si la prédiction
+est supérieure à 0.5, `False` sinon.
 
 Lancez l'application comme indiqué plus haut, puis testez une requête
 :
@@ -143,9 +143,12 @@ curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest
 ## Préparatifs pour Docker
 
 Il y a deux changements à apporter pour que votre code fonctionne dans
-Docker. En effet, la communication avec FastAPI ne se fera plus par
-localhost, mais avec le nom de l'image TensorFlow Serving, qui vous
-sera passée dans la variable d'environnement `TF_HOST`.
+Docker.
+
+Premièrement, la communication avec FastAPI ne se fera plus par
+localhost, mais avec le nom de l'image TensorFlow Serving au sein du
+réseau Docker, qui vous sera passée dans la variable d'environnement
+`TF_HOST` (cf. le fichier `docker-compose.yml`)
 
 Il faut donc modifier votre code pour lire `TF_HOST`, en utilisant
 `localhost` si la variable d'environnement n'est pas définie :
@@ -188,9 +191,9 @@ docker build . -f Dockerfile.server -t imdb-reviews-server
 Pour la lancer, on va passer par docker-compose, qui est une solution
 simple pour que l'image Docker FastAPI puisse communiquer avec
 TensorFlow Serving. (C'était possible avec `docker run` mais il aurait
-fallu configurer le réseau Docker nous-même)
+fallu configurer le réseau Docker nous-même.)
 
-Je vous ai préparé un fichier docker-compose.yml. Assurez-vous que
+Je vous ai préparé un fichier `docker-compose.yml`. Assurez-vous que
 vous avez arrêté le TensorFlow Serving lancé plus haut, puis lancez
 les deux images à l'aide de cette commande :
 
@@ -218,7 +221,7 @@ wrk -t 2 -c 10 http://127.0.0.1:8000/v1/predict -s post.lua
 ```
 
 Combien de requêtes par seconde obtenez-vous ? J'en ai obtenu 300 sur
-mon ordinateur.
+mon ordinateur !
 
 ## Notes
 
