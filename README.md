@@ -23,6 +23,9 @@ pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
+À ne faire qu'avec Python 3.6 ou Python 3.7, Docker ne supportant pas
+encore Python 3.8.
+
 ## API locale simple
 
 Essayons de faire fonctionner FastAPI. Écrivez le code suivant dans un
@@ -85,7 +88,9 @@ padding, comme dans le TP.
 Et pour faire ça, il faut désérialiser le tokenizer Keras :
 
  * Désérialiser le vectorizer via
-   `tf.keras.preprocessing.text.tokenizer_from_json`
+   `tf.keras.preprocessing.text.tokenizer_from_json` (qui prend une
+   chaîne de caractères, c'est à vous d'ouvrir le fichier et d'appeler
+   `read()`)
  * Écrire une fonction preprocess() qui étant donné un texte comme
    "This was the biggest hit movie of 1971", renvoie une liste Python
    d'entiers à envoyer à TensorFlow.
