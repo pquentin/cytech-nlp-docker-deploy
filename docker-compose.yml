@@ -1,0 +1,14 @@
+tf-serving:
+  image: imdb-reviews-tf-serving
+  ports:
+    - "8501:8501"
+  environment:
+    - MODEL_NAME=imdb_reviews_model
+fastapi:
+  image: imdb-reviews-server
+  ports:
+    - "8000:80"
+  links:
+    - tf-serving
+  environment:
+    - TF_HOST=tf-serving

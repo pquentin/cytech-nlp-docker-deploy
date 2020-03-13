@@ -1,0 +1,4 @@
+FROM quentinpradet/fastapi-tensorflow:0.1
+
+COPY app /app
+COPY imdb_reviews_model/tokenizer.json /models/imdb_reviews_model/
