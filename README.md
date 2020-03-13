@@ -11,6 +11,11 @@ Nous commençons par un développement en local, puis nous utiliserons
 Docker (toujours en local), ce qui vous permettra de facilement
 reprendre cet exemple en dehors de ce cours si vous le souhaitez.
 
+Nous allons procéder par étapes, afin de voir les problèmes au plus
+vite. Vouloir commencer tout de suite avec Docker serait au final une
+perte de temps, il est beaucoup plus facile de traiter les problèmes
+en isolation puis d'intégrer par la suite. (Vous avez du vous en
+rendre compte, depuis le temps que vous êtes à CY Tech !)
 
 ## Installation des dépendances
 
@@ -23,8 +28,8 @@ pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
-À ne faire qu'avec Python 3.6 ou Python 3.7, Docker ne supportant pas
-encore Python 3.8.
+À ne faire qu'avec Python 3.6 ou Python 3.7, TensorFlow ne supportant
+pas encore Python 3.8.
 
 ## API locale simple
 
@@ -48,9 +53,9 @@ dans votre navigateur.
 
 ## Récupérer les modèles
 
-Dézippez dans models/ le fichier imdb_reviews_model.zip que vous avez
-récupéré lors du TP précédent. La commande `tree models` devrait vous
-afficher ceci :
+Dézippez dans `models/` le fichier `imdb_reviews_model.zip` que vous
+avez récupéré lors du TP précédent. La commande `tree models` devrait
+vous afficher ceci :
 
 ```
 models
@@ -75,17 +80,15 @@ docker build . -f Dockerfile.tensorflow -t imdb-reviews-tf-serving
 docker run --rm -p 8501:8501 -e MODEL_NAME=imdb_reviews_model imdb-reviews-tf-serving
 ```
 
-Notre code FastAPI va communiquer avec TensorFlow Serving pour obtenir
-les prédictions.
+Notre code FastAPI va communiquer avec cet instance de TensorFlow
+Serving sur le port 8501 pour obtenir les prédictions.
 
 ## Preprocessing
 
 Cependant, tout le travail ne se fait pas dans TensorFlow Serving, il
 faut aussi préparer le texte comme nous l'avons fait lors du TP. En
-d'autres termes, il fau transformer le texte en séquence d'entier avec
-padding, comme dans le TP.
-
-Et pour faire ça, il faut désérialiser le tokenizer Keras :
+d'autres termes, il faut transformer le texte en séquence d'entier avec
+padding.
 
  * Désérialiser le vectorizer via
    `tf.keras.preprocessing.text.tokenizer_from_json` (qui prend une
@@ -102,13 +105,18 @@ TensorFlow Serving, sans passer par FastAPI pour le moment :
 curl -d '{"instances": [[0, 0, ...]]}' -X POST http://localhost:8501/v1/models/imdb_reviews_model:predict
 ```
 
+(Même si les prédictions sont fausses parce que le texte est très
+différent des textes fournis en entrée, ce n'est pas l'objet de ce
+TP.)
+
 ## Intégration à l'app FastAPI
 
 Nous voulons maintenant que FastAPI communique avec TensorFlow
 Serving.
 
-Ajoutez une fonction qui va s'exécuter au démarrage pour instancier le
-tokenizer Keras:
+Ajoutez cette fonction qui va s'exécuter au démarrage de votre
+application FastAPI pour instancier le tokenizer Keras d'après le code
+écrit plus haut :
 
 ```python3
 @app.on_event("startup")
@@ -132,11 +140,11 @@ curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest
 
 Il y a deux changements à apporter pour que votre code fonctionne dans
 Docker. En effet, la communication avec FastAPI ne se fera plus par
-localhost, mais avec le nom de l'image TensorFLow Serving, qui vous
+localhost, mais avec le nom de l'image TensorFlow Serving, qui vous
 sera passée dans la variable d'environnement `TF_HOST`.
 
 Il faut donc modifier votre code pour lire `TF_HOST`, en utilisant
-`localhost` si la variable n'est pas définie :
+`localhost` si la variable d'environnement n'est pas définie :
 
 ```python3
 import os
@@ -175,25 +183,25 @@ docker build . -f Dockerfile.server -t imdb-reviews-server
 
 Pour la lancer, on va passer par docker-compose, qui est une solution
 simple pour que l'image Docker FastAPI puisse communiquer avec
-TensorFlow Serving. (Par défaut, deux conteneurs Docker ne peuvent pas
-parler entre eux.)
+TensorFlow Serving. (C'était possible avec `docker run` mais il aurait
+fallu configurer le réseau Docker nous-même)
 
-Je vous ai préparé un fichier docker-compose.yml, vous pouvez lancer
+Je vous ai préparé un fichier docker-compose.yml. Assurez-vous que
+vous avez arrêté le TensorFlow Serving lancé plus haut, puis lancez
 les deux images à l'aide de cette commande :
 
 ```bash
 docker-compose up
 ```
 
-Vous pouvez relancer une requête qui cette fois va parler à notre
+Vous pouvez alors relancer une requête qui cette fois va parler à notre
 serveur dans Docker :
 
 ```bash
 curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest hit movie of 1971"}'
 ```
 
-Nous allons tester les performances de prédiction. Pour ceci,
-installez wrk :
+Et tester les performances de prédiction. Pour ceci, installez wrk :
 
  * Linux : https://github.com/wg/wrk/wiki/Installing-wrk-on-Linux
  * macOS: https://github.com/wg/wrk/wiki/Installing-wrk-on-OS-X
@@ -205,7 +213,8 @@ Puis testez les performances :
 wrk -t 2 -c 10 http://127.0.0.1:8000/v1/predict -s post.lua
 ```
 
-Combien de requêtes par seconde obtenez-vous ?
+Combien de requêtes par seconde obtenez-vous ? J'en ai obtenu 300 sur
+mon ordinateur.
 
 ## Notes
 
