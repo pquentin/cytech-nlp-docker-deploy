@@ -1,4 +1,4 @@
-# Déploiement d'un modèle TensorFlow Keras
+# Déploiement d'un modèle Keras avec Docker et FastAPI
 
 L'objet de ce TP est de déployer le modèle d'analyse d'opinion que
 vous venez de développer. Le déployer, ça veut dire le rendre
@@ -14,8 +14,8 @@ reprendre cet exemple en dehors de ce cours si vous le souhaitez.
 Nous allons procéder par étapes, afin de voir les problèmes au plus
 vite. Vouloir commencer tout de suite avec Docker serait au final une
 perte de temps, il est beaucoup plus facile de traiter les problèmes
-en isolation puis d'intégrer par la suite. (Vous avez du vous en
-rendre compte, depuis le temps que vous êtes à CY Tech !)
+en isolation puis d'assembler les composants par la suite. (Vous avez
+du vous en rendre compte, depuis le temps que vous êtes à CY Tech !)
 
 ## Installation des dépendances
 
@@ -28,12 +28,14 @@ pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
-(À ne faire qu'avec Python 3.6 ou Python 3.7, TensorFlow ne supportant
-pas encore Python 3.8.)
+(À ne faire qu'avec Python 3.6 ou Python 3.7, [TensorFlow ne
+supportant pas encore Python
+3.8](https://github.com/tensorflow/tensorflow/issues/33374).)
 
-Oui, TensorFlow prend beaucoup de place. On pourrait s'en passer, mais
-il aurait fallu éviter Keras pour implémenter le tokenizer, et passer
-par exemple par spaCy.
+Oui, TensorFlow prend beaucoup de place. On pourrait s'en passer, ce
+qui réduirait beaucoup la taille de l'image Docker mais il aurait
+fallu éviter Keras pour implémenter le tokenizer, et passer par
+exemple par spaCy.
 
 ## API locale simple
 
@@ -166,7 +168,7 @@ utilisant par exemple une f-string Python :
 f"http://{TF_HOST}:8501/v1/models/imdb_reviews_model:predict"
 ```
 
-Le deuxième changement consiste à trouver tokenizer.json au bon
+Le deuxième changement consiste à trouver `tokenizer.json` au bon
 endroit. Pour ce faire, vous pouvez changer votre fonction
 `startup_event` comme suit:
 
