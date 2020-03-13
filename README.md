@@ -16,7 +16,7 @@ reprendre cet exemple en dehors de ce cours si vous le souhaitez.
 
 Vous avez déjà du faire ça :
 
-```
+```bash
 python3 -m venv tp-nlp-deploy
 source tp-nlp-deploy/bin/activate
 pip install fastapi uvicorn requests
@@ -31,7 +31,7 @@ encore Python 3.8.
 Essayons de faire fonctionner FastAPI. Écrivez le code suivant dans un
 fichier app/main.py:
 
-```
+```python3
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -98,7 +98,7 @@ Et pour faire ça, il faut désérialiser le tokenizer Keras :
 Pour tester que ces valeurs sont correctes, les utiliser pour appeler
 TensorFlow Serving, sans passer par FastAPI pour le moment :
 
-```
+```bash
 curl -d '{"instances": [[0, 0, ...]]}' -X POST http://localhost:8501/v1/models/imdb_reviews_model:predict
 ```
 
@@ -110,7 +110,7 @@ Serving.
 Ajoutez une fonction qui va s'exécuter au démarrage pour instancier le
 tokenizer Keras:
 
-```
+```python3
 @app.on_event("startup")
 def startup_event():
     app.state.tokenizer = ...
@@ -124,7 +124,7 @@ prédiction est supérieure à 0.5, False sinon.
 Lancez l'application comme indiqué plus haut, puis testez une requête
 :
 
-```
+```bash
 curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest hit movie of 1971"}
 ```
 
@@ -138,14 +138,16 @@ sera passée dans la variable d'environnement `TF_HOST`.
 Il faut donc modifier votre code pour lire `TF_HOST`, en utilisant
 `localhost` si la variable n'est pas définie :
 
-```
+```python3
+import os
+
 TF_HOST: str = os.environ.get("TF_HOST", "localhost")
 ```
 
 Et ensuite, au moment de la requête, définissez l'URL comme suit, en
 utilisant par exemple une f-string Python :
 
-```
+```python3
 f"http://{TF_HOST}:8501/v1/models/imdb_reviews_model:predict"
 ```
 
@@ -153,7 +155,7 @@ Le deuxième changement consiste à trouver tokenizer.json au bon
 endroit. Pour ce faire, vous pouvez changer votre fonction
 `startup_event` comme suit:
 
-```
+```python3
 appdir = os.path.abspath(os.path.dirname(__file__))
 tokenizer_path = os.path.join(appdir, "../models/imdb_reviews_model/tokenizer.json")
 ```
@@ -167,7 +169,7 @@ données pour les fournir à
 Fantastique ! Nous sommes prêts pour passer à Docker. Construisons
 l'image de notre serveur :
 
-```
+```bash
 docker build . -f Dockerfile.server -t imdb-reviews-server
 ```
 
@@ -179,14 +181,14 @@ parler entre eux.)
 Je vous ai préparé un fichier docker-compose.yml, vous pouvez lancer
 les deux images à l'aide de cette commande :
 
-```
+```bash
 docker-compose up
 ```
 
 Vous pouvez relancer une requête qui cette fois va parler à notre
 serveur dans Docker :
 
-```
+```bash
 curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest hit movie of 1971"}'
 ```
 
@@ -199,7 +201,7 @@ installez wrk :
 
 Puis testez les performances :
 
-```
+```bash
 wrk -t 2 -c 10 http://127.0.0.1:8000/v1/predict -s post.lua
 ```
 
