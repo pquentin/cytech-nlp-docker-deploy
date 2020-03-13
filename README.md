@@ -28,8 +28,12 @@ pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
-À ne faire qu'avec Python 3.6 ou Python 3.7, TensorFlow ne supportant
-pas encore Python 3.8.
+(À ne faire qu'avec Python 3.6 ou Python 3.7, TensorFlow ne supportant
+pas encore Python 3.8.)
+
+Oui, TensorFlow prend beaucoup de place. On pourrait s'en passer, mais
+il aurait fallu éviter Keras pour implémenter le tokenizer, et passer
+par exemple par spaCy.
 
 ## API locale simple
 
@@ -106,8 +110,8 @@ curl -d '{"instances": [[0, 0, ...]]}' -X POST http://localhost:8501/v1/models/i
 ```
 
 (Même si les prédictions sont fausses parce que le texte est très
-différent des textes fournis en entrée, ce n'est pas l'objet de ce
-TP.)
+différent des textes fournis en entrée sur lequel le modèle a été
+entraîné, ce n'est pas grave parce que ce n'est pas l'objet de ce TP.)
 
 ## Intégration à l'app FastAPI
 
