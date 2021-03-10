@@ -82,8 +82,7 @@ Nous allons construire et lancer une image Docker TensorFlow Serving
 avec ce modèle :
 
 ```
-docker build . -f Dockerfile.tensorflow -t imdb-reviews-tf-serving
-docker run --rm -p 8501:8501 -e MODEL_NAME=imdb_reviews_cnn_model imdb-reviews-tf-serving
+docker-compse up tfserving
 ```
 
 Notre code FastAPI va communiquer avec cet instance de TensorFlow
@@ -102,7 +101,8 @@ padding.
    `read()`)
  * Écrire une fonction `preprocess()` qui étant donné un texte comme
    "This was the biggest hit movie of 1971", renvoie une liste Python
-   d'entiers à envoyer à TensorFlow.
+   d'entiers à envoyer à TensorFlow (avec `texts_to_sequences` et
+   `pad_sequences` comme lors du TP.
 
 Pour tester que ces valeurs sont correctes, les utiliser pour appeler
 TensorFlow Serving, sans passer par FastAPI pour le moment :
@@ -144,7 +144,7 @@ curl -X POST http://localhost:8000/v1/predict -d '{"text": "This was the biggest
 
 ## Préparatifs pour Docker
 
-Il y a deux changements à apporter pour que votre code fonctionne dans
+Il y a un changement à apporter pour que votre code fonctionne dans
 Docker.
 
 Premièrement, la communication avec FastAPI ne se fera plus par
@@ -168,39 +168,13 @@ utilisant par exemple une f-string Python :
 f"http://{TF_HOST}:8501/v1/models/imdb_reviews_cnn_model:predict"
 ```
 
-Le deuxième changement consiste à trouver `tokenizer.json` au bon
-endroit. Pour ce faire, vous pouvez changer votre fonction
-`startup_event` comme suit:
-
-```python3
-appdir = os.path.abspath(os.path.dirname(__file__))
-tokenizer_path = os.path.join(appdir, "../models/imdb_reviews_cnn_model/tokenizer.json")
-```
-
-Vous pouvez alors ouvrir le fichier `tokenizer_path`, et lire les
-données pour les fournir à
-`tf.keras.preprocessing.text.tokenizer_from_json`.
-
 ## FastAPI dans Docker
 
 Fantastique ! Nous sommes prêts pour passer à Docker. Construisons
-l'image de notre serveur :
+l'image de notre serveur et lançons la via-docker-compose :
 
 ```bash
-docker build . -f Dockerfile.server -t imdb-reviews-server
-```
-
-Pour la lancer, on va passer par docker-compose, qui est une solution
-simple pour que l'image Docker FastAPI puisse communiquer avec
-TensorFlow Serving. (C'était possible avec `docker run` mais il aurait
-fallu configurer le réseau Docker nous-même.)
-
-Je vous ai préparé un fichier `docker-compose.yml`. Assurez-vous que
-vous avez arrêté le TensorFlow Serving lancé plus haut, puis lancez
-les deux images à l'aide de cette commande :
-
-```bash
-docker-compose up
+docker-compose up fastapi
 ```
 
 Vous pouvez alors relancer une requête qui cette fois va parler à notre
