@@ -19,7 +19,7 @@ du vous en rendre compte, depuis le temps que vous êtes à CY Tech !)
 
 ## Installation des dépendances
 
-Vous avez déjà du faire ça :
+On utilise un virtualenv classique :
 
 ```bash
 python3 -m venv tp-nlp-deploy
@@ -28,9 +28,8 @@ pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
-(À ne faire qu'avec Python 3.6 ou Python 3.7, [TensorFlow ne
-supportant pas encore Python
-3.8](https://github.com/tensorflow/tensorflow/issues/33374).)
+(À ne faire qu'avec Python 3.7 ou Python 3.8, TensorFlow ne
+fournissant pas encore de paquets précompilés pour Python 3.9)
 
 Oui, TensorFlow prend beaucoup de place. On pourrait s'en passer, ce
 qui réduirait beaucoup la taille de l'image Docker mais il aurait
@@ -59,13 +58,13 @@ dans votre navigateur.
 
 ## Récupérer les modèles
 
-Dézippez dans `models/` le fichier `imdb_reviews_model.zip` que vous
+Dézippez dans `models/` le fichier `imdb_reviews_cn_model.zip` que vous
 avez récupéré lors du TP précédent. La commande `tree models` devrait
 vous afficher ceci :
 
 ```
 models
-└── imdb_reviews_model
+└── imdb_reviews_cnn_model
     ├── 1
     │   ├── assets
     │   ├── saved_model.pb
@@ -83,7 +82,7 @@ avec ce modèle :
 
 ```
 docker build . -f Dockerfile.tensorflow -t imdb-reviews-tf-serving
-docker run --rm -p 8501:8501 -e MODEL_NAME=imdb_reviews_model imdb-reviews-tf-serving
+docker run --rm -p 8501:8501 -e MODEL_NAME=imdb_reviews_cnn_model imdb-reviews-tf-serving
 ```
 
 Notre code FastAPI va communiquer avec cet instance de TensorFlow
@@ -108,7 +107,7 @@ Pour tester que ces valeurs sont correctes, les utiliser pour appeler
 TensorFlow Serving, sans passer par FastAPI pour le moment :
 
 ```bash
-curl -d '{"instances": [[0, 0, ...]]}' -X POST http://localhost:8501/v1/models/imdb_reviews_model:predict
+curl -d '{"instances": [[0, 0, ...]]}' -X POST http://localhost:8501/v1/models/imdb_reviews_cnn_model:predict
 ```
 
 (Même si les prédictions sont fausses parce que le texte est très
@@ -165,7 +164,7 @@ Et ensuite, au moment de la requête, définissez l'URL comme suit, en
 utilisant par exemple une f-string Python :
 
 ```python3
-f"http://{TF_HOST}:8501/v1/models/imdb_reviews_model:predict"
+f"http://{TF_HOST}:8501/v1/models/imdb_reviews_cnn_model:predict"
 ```
 
 Le deuxième changement consiste à trouver `tokenizer.json` au bon
@@ -174,7 +173,7 @@ endroit. Pour ce faire, vous pouvez changer votre fonction
 
 ```python3
 appdir = os.path.abspath(os.path.dirname(__file__))
-tokenizer_path = os.path.join(appdir, "../models/imdb_reviews_model/tokenizer.json")
+tokenizer_path = os.path.join(appdir, "../models/imdb_reviews_cnn_model/tokenizer.json")
 ```
 
 Vous pouvez alors ouvrir le fichier `tokenizer_path`, et lire les
@@ -227,10 +226,8 @@ mon ordinateur !
 
 ## Notes
 
-Ceci est un TP bonus, il ne peut que donner des points, pas en
-enlever.
+Merci de vous enregistrer en train de faire `docker-compose up` et
+appelez curl ou wrk comme ci-dessus. Vous pouvez utiliser
+https://asciinema.org/ ou m'envoyer une vidéo par mail.
 
-Si vous souhaitez obtenir les points bonus, merci de vous enregistrer
-en train de faire `docker-compose up` et appelez curl ou wrk comme
-ci-dessus. Vous pouvez utiliser https://asciinema.org/ ou m'envoyer
-une vidéo par mail.
+Pour des points bonus, faire la même chose avec BERT.
