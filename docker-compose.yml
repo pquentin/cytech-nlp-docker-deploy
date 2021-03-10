@@ -1,14 +1,22 @@
-tf-serving:
-  image: imdb-reviews-tf-serving
-  ports:
-    - "8501:8501"
-  environment:
-    - MODEL_NAME=imdb_reviews_model
-fastapi:
-  image: imdb-reviews-server
-  ports:
-    - "8000:80"
-  links:
-    - tf-serving
-  environment:
-    - TF_HOST=tf-serving
+version: "3"
+
+services:
+  tf-serving:
+    image: tensorflow/serving:2.4.1
+    volumes:
+      - ./models:/models
+    ports:
+      - "8501:8501"
+    environment:
+      - MODEL_NAME=imdb_reviews_cnn_model
+  fastapi:
+    build: .
+    volumes:
+      - ./app:/app
+      - ./models:/app/models
+    ports:
+      - "8000:80"
+    links:
+      - tf-serving
+    environment:
+      - TF_HOST=tf-serving

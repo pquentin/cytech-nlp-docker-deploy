@@ -19,17 +19,17 @@ du vous en rendre compte, depuis le temps que vous êtes à CY Tech !)
 
 ## Installation des dépendances
 
-On utilise un virtualenv classique :
+Avec Pytyon 3.8, créer un virtualenv classique :
 
 ```bash
-python3 -m venv tp-nlp-deploy
+python3.8 -m venv tp-nlp-deploy
 source tp-nlp-deploy/bin/activate
 pip install fastapi uvicorn requests
 pip install tensorflow
 ```
 
-(À ne faire qu'avec Python 3.7 ou Python 3.8, TensorFlow ne
-fournissant pas encore de paquets précompilés pour Python 3.9)
+(Pourquoi Python 3.8 ? Parce que TensorFlow ne fournit pas encore de
+paquets précompilés pour Python 3.9)
 
 Oui, TensorFlow prend beaucoup de place. On pourrait s'en passer, ce
 qui réduirait beaucoup la taille de l'image Docker mais il aurait
@@ -45,6 +45,7 @@ fichier app/main.py:
 from fastapi import FastAPI
 
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
@@ -221,13 +222,11 @@ Puis testez les performances :
 wrk -t 2 -c 10 http://127.0.0.1:8000/v1/predict -s post.lua
 ```
 
-Combien de requêtes par seconde obtenez-vous ? J'en ai obtenu 300 sur
-mon ordinateur !
+Combien de requêtes par seconde obtenez-vous ? J'en ai obtenu environ
+250 sur mon laptop.
 
 ## Notes
 
-Merci de vous enregistrer en train de faire `docker-compose up` et
-appelez curl ou wrk comme ci-dessus. Vous pouvez utiliser
-https://asciinema.org/ ou m'envoyer une vidéo par mail.
+Envoyez-moi votre fichier app.py par mail, un par groupe.
 
 Pour des points bonus, faire la même chose avec BERT.
