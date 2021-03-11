@@ -82,7 +82,7 @@ Nous allons construire et lancer une image Docker TensorFlow Serving
 avec ce modèle :
 
 ```
-docker-compse up tfserving
+docker-compse up tf-serving
 ```
 
 Notre code FastAPI va communiquer avec cet instance de TensorFlow
